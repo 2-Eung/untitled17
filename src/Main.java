@@ -1,47 +1,34 @@
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Method;
+import java.io.FileWriter;
+import java.io.IOException;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@interface CustomInfo {
-    String author();
-    String date();
-    int version() default 1;
-}
-@CustomInfo(author = "ㅇㅇㅎ", date = "2025-06-24", version = 2)   // CustomInfo 업데이트?
-class Demo {
-
-    @CustomInfo(author = "ㅇㅇㅎ", date ="2026-06-26")
-    public void display() {
-        System.out.println("Display method executed.");
-    }
-}
 public class Main {
-    public static void main(String[] args) {
-        Demo demo = new Demo();
-        Class<?> demoClass = demo.getClass();
-
-        if (demoClass.isAnnotationPresent(CustomInfo.class)) {
-            CustomInfo classInfo = demoClass.getAnnotation(CustomInfo.class);
-            System.out.println("Author: " + classInfo.author());
-            System.out.println("Date: " + classInfo.date());
-            System.out.println("Version: " + classInfo.version());
+    public static void writeFile(String filename,String content) {
+//        FileWriter writer = null;
+//        try {
+//            writer = new FileWriter(filename);
+//            writer.write(content);
+//        } catch (IOException e) {
+//            e.printStackTrace();                    // writer 를 닫는 코드는
+//        } finally {                                 // 항상 실행되야하는건데 조건에따라
+//            try {                                   // 실행해야해서 if
+//                if (writer != null) writer.close(); // 에러 발생할까봐 try-catch
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }                       // 이어쓰기 하려면 '여기에' 두번째인자 true 추가
+        try (FileWriter writer = new FileWriter(filename, true)) { // try-with-resource
+            writer.write(content);                           // finally 를 괄호() 안에서 수행
+        } catch (IOException e) {                            // 위의 코드와 같은 결과
+            e.printStackTrace();
         }
-        try {                                                // "display" 가 있든없든
-            Method m = demoClass.getMethod("display"); // 꺼내오려하기때문에 에러발생
-                                                             // try-catch 필수 (위험한 코드)
-            if(m.isAnnotationPresent(CustomInfo.class)) {
-                CustomInfo mi = m.getAnnotation(CustomInfo.class);
 
-                System.out.println("Author: " + mi.author());
-                System.out.println("Date: " + mi.date());
-                System.out.println("Version: " + mi.version());
-            }
-        } catch(NoSuchMethodException e) {
-            e.getStackTrace();
-        }
+    }
+
+    public static void main(String[] args) {         // 좌측 src 에 .txt 파일 생성됨
+//        writeFile("lunch-menu.txt","오늘의 저녁 메뉴는 무엇인가요?");
+//        System.out.println("파일 생성 완료");          // 기본적으로 덮어쓰기
+
+        writeFile("lunch-menu.txt","\n제육");
+        System.out.println("이어쓰기");          // true 추가되면 이어쓰기
     }
 }
